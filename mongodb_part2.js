@@ -106,7 +106,7 @@ db.airlines.aggregate(
 		}
 	]
 );
-// Result
+// Result:
 // { 
 //     "_id" : "Latvia", 
 //     "carriers" : [
@@ -153,7 +153,7 @@ db.airlines.aggregate(
 		}
 	]
 );
-// Result
+// Result:
 // { "_id" : "Compagnia Aerea Italiana", "total" : 280256 }
 // { "_id" : "United Air Lines Inc.", "total" : 229936 }
 // { "_id" : "Emirates", "total" : 100903 }
@@ -161,3 +161,52 @@ db.airlines.aggregate(
 // { "_id" : "Meridiana S.p.A", "total" : 20308 }
 // { "_id" : "Norwegian Air Shuttle ASA", "total" : 13344 }
 // { "_id" : "VistaJet Limited", "total" : 183 }
+
+
+//-------------------------------------
+//  1.5
+//-------------------------------------
+db.airlines.aggregate(
+	[
+		{
+			$match: {
+				"originCountry" : "United States"
+			}
+		},
+		{
+			$group: {
+				_id: { 
+				  originState: "$originState", 
+				  originCity: "$originCity" },
+				 totalPassengers: {$sum: "$passengers"}
+			}
+		},
+		{
+			$sort: {
+				totalPassengers : -1
+			}
+		},
+		{
+			$limit: 5
+		},
+		{
+			$sort: {
+				"_id.originState" : 1
+			}
+		},
+		{
+			$project: {
+			    _id : 0,
+			    totalPassengers : "$totalPassengers",
+			    location : { state : "$_id.originState", city : "$_id.originCity" }
+			}
+		},
+
+	]
+);
+// Result:
+// { "totalPassengers" : 23701556, "location" : { "state" : "California", "city" : "Los Angeles, CA" } }
+// { "totalPassengers" : 29416565, "location" : { "state" : "Georgia", "city" : "Atlanta, GA" } }
+// { "totalPassengers" : 28035755, "location" : { "state" : "Illinois", "city" : "Chicago, IL" } }
+// { "totalPassengers" : 25266639, "location" : { "state" : "New York", "city" : "New York, NY" } }
+// { "totalPassengers" : 18408792, "location" : { "state" : "Texas", "city" : "Dallas/Fort Worth, TX" } }
