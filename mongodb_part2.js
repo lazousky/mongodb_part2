@@ -103,8 +103,7 @@ db.airlines.aggregate(
 			    _id : "$_id.destCountry",
 			    carriers: "$carriers"
 			}
-		},
-
+		}
 	]
 );
 // Result
@@ -116,3 +115,49 @@ db.airlines.aggregate(
 //         "JetClub AG"
 //     ]
 // }
+
+
+//-------------------------------------
+//  1.4
+//-------------------------------------
+db.airlines.aggregate(
+	[
+		{
+			$match: {
+				"originCountry" : "United States",
+				"destCountry": { $in: [ "Greece", "Italy", "Spain"] } 	
+			}
+		},
+		{
+			$group: {
+				_id : { carrier: "$carrier"},
+				total : { $sum : "$passengers"}
+			}
+		},
+		{
+			$project: {
+			    _id : "$_id.carrier",
+			    total : "$total"
+			}
+		},
+		{
+			$sort: {
+				total : -1
+			}
+		},
+		{
+			$limit: 10
+		},		
+		{
+			$skip: 3
+		}
+	]
+);
+// Result
+// { "_id" : "Compagnia Aerea Italiana", "total" : 280256 }
+// { "_id" : "United Air Lines Inc.", "total" : 229936 }
+// { "_id" : "Emirates", "total" : 100903 }
+// { "_id" : "Air Europa", "total" : 94968 }
+// { "_id" : "Meridiana S.p.A", "total" : 20308 }
+// { "_id" : "Norwegian Air Shuttle ASA", "total" : 13344 }
+// { "_id" : "VistaJet Limited", "total" : 183 }
