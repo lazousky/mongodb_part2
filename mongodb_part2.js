@@ -81,3 +81,38 @@ db.airlines.aggregate(
 //     "city" : "Guangzhou, China"
 // }
 
+
+//-------------------------------------
+//  1.3
+//-------------------------------------
+db.airlines.aggregate(
+	[
+		{
+			$match: {
+				"destCountry" : { $eq : "Latvia"}
+			}
+		},
+		{
+			$group: {
+				_id: { destCountry: "$destCountry"},
+				carriers: {$addToSet: "$carrier"}
+			}
+		},
+		{
+			$project: {
+			    _id : "$_id.destCountry",
+			    carriers: "$carriers"
+			}
+		},
+
+	]
+);
+// Result
+// { 
+//     "_id" : "Latvia", 
+//     "carriers" : [
+//         "Uzbekistan Airways", 
+//         "Blue Jet SP Z o o", 
+//         "JetClub AG"
+//     ]
+// }
