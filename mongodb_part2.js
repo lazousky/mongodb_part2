@@ -210,3 +210,59 @@ db.airlines.aggregate(
 // { "totalPassengers" : 28035755, "location" : { "state" : "Illinois", "city" : "Chicago, IL" } }
 // { "totalPassengers" : 25266639, "location" : { "state" : "New York", "city" : "New York, NY" } }
 // { "totalPassengers" : 18408792, "location" : { "state" : "Texas", "city" : "Dallas/Fort Worth, TX" } }
+
+//-------------------------------------
+// Task For Enron Db
+//-------------------------------------
+db.enron.aggregate(
+	[
+		{
+			$project: {
+			  	Mail_id : "$_id",
+				From : "$headers.From",
+				To : "$headers.To"
+			}
+		},
+		{
+			$unwind: "$To"
+		},
+		{
+			$group: {
+				_id : "$Mail_id",
+				From : { $first: "$From" },
+				To : { $addToSet : "$To" }
+			}
+		},
+		{
+			$unwind: "$To"
+		},
+		{
+			$group: {
+			    _id: {
+			            From: "$From",
+			            To: "$To"
+			    },
+			    count: {$sum: 1}
+			}
+		},
+		{
+			$sort: {
+				count : -1
+			}
+		},
+		{
+			$limit: 1
+		},
+		{
+			$project: {
+				_id : 0,
+				From : "$_id.From",
+				To : "$_id.To",
+				count: "$count"
+			}
+		}
+	]
+);
+
+// Result:
+// { "From" : "susan.mara@enron.com", "To" : "jeff.dasovich@enron.com", "count" : 750 }
