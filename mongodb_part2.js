@@ -175,19 +175,20 @@ db.airlines.aggregate(
 		},
 		{
 			$group: {
-				_id: { 
-				  originState: "$originState", 
-				  originCity: "$originCity" },
-				 totalPassengers: {$sum: "$passengers"}
+				_id: { originState: "$originState", 
+					   originCity: "$originCity" },
+				totalPassengers: {$sum: "$passengers"}
 			}
 		},
 		{
-			$sort: {
-				totalPassengers : -1
-			}
+			$sort: {totalPassengers : -1}
 		},
 		{
-			$limit: 5
+			$group: {
+				_id : { originState : "$_id.originState"},
+				originCity : { $first : "$_id.originCity"},
+				totalPassengers : { $first : "$totalPassengers"}
+			}
 		},
 		{
 			$sort: {
@@ -195,21 +196,23 @@ db.airlines.aggregate(
 			}
 		},
 		{
-			$project: {
-			    _id : 0,
-			    totalPassengers : "$totalPassengers",
-			    location : { state : "$_id.originState", city : "$_id.originCity" }
-			}
+			$limit: 5
 		},
-
+		{
+			$project: {
+			  	_id : 0,
+				totalPassengers : "$totalPassengers",
+				location : { state : "$_id.originState", city : "$originCity" }
+			}
+		}
 	]
 );
 // Result:
+// { "totalPassengers" : 760120, "location" : { "state" : "Alabama", "city" : "Birmingham, AL" } }
+// { "totalPassengers" : 1472404, "location" : { "state" : "Alaska", "city" : "Anchorage, AK" } }
+// { "totalPassengers" : 13152753, "location" : { "state" : "Arizona", "city" : "Phoenix, AZ" } }
+// { "totalPassengers" : 571452, "location" : { "state" : "Arkansas", "city" : "Little Rock, AR" } }
 // { "totalPassengers" : 23701556, "location" : { "state" : "California", "city" : "Los Angeles, CA" } }
-// { "totalPassengers" : 29416565, "location" : { "state" : "Georgia", "city" : "Atlanta, GA" } }
-// { "totalPassengers" : 28035755, "location" : { "state" : "Illinois", "city" : "Chicago, IL" } }
-// { "totalPassengers" : 25266639, "location" : { "state" : "New York", "city" : "New York, NY" } }
-// { "totalPassengers" : 18408792, "location" : { "state" : "Texas", "city" : "Dallas/Fort Worth, TX" } }
 
 //-------------------------------------
 // Task For Enron Db
